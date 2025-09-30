@@ -1,0 +1,415 @@
+import type { DeviceRecord, DeviceSystem } from '@/types/device';
+import type { DeviceEvaluationResult, IndicatorSystemConfig, WeightScheme } from '@/types/evaluation';
+
+export const deviceSystems: DeviceSystem[] = [
+  {
+    id: 'main-substation',
+    name: '主变电所',
+    description: '供电系统核心枢纽，负责牵引电能的集中变换与分配。',
+    categories: [
+      '开关设备',
+      '母线',
+      '变压器',
+      '电抗器',
+      '互感器',
+      '电容器',
+      '隔离开关',
+      '交直流电源',
+      '各类电缆及光缆',
+      '保护装置',
+      '变电所综合自动化',
+      '避雷装置',
+      '无功补偿系统'
+    ]
+  },
+  {
+    id: 'sub-substation',
+    name: '子变电所',
+    description: '配合主变电所完成牵引供电与降压供电任务。',
+    categories: [
+      '开关设备',
+      '变压器',
+      'OVPD',
+      '负极柜',
+      '整流器柜',
+      '交直流电源',
+      '各类电缆及光缆',
+      '回流装置',
+      '变电所综合自动化',
+      '保护装置及二次回路'
+    ]
+  },
+  {
+    id: 'catenary',
+    name: '接触网系统',
+    description: '刚柔性接触网承载牵引电流，是列车受流的关键系统。',
+    categories: ['汇流排', '接触线', '承力索', '架空地线', '支柱', '软横跨', '上网隔离开关']
+  },
+  {
+    id: 'power-lighting',
+    name: '动力照明系统',
+    description: '动力与照明用电系统，预留扩展接口。',
+    categories: ['占位待建']
+  },
+  {
+    id: 'stray-current',
+    name: '杂散电流防护系统',
+    description: '用于控制与引导杂散电流的防护设施。',
+    categories: ['占位待建']
+  },
+  {
+    id: 'power-monitor',
+    name: '电力监控系统',
+    description: '对供电设备与参数进行实时监测与管理。',
+    categories: ['占位待建']
+  }
+];
+
+export const seedDevices: DeviceRecord[] = [
+  {
+    id: 'MSS-SW-001',
+    name: '主变电所开关柜A1',
+    code: 'MSS-SW-001',
+    systemId: 'main-substation',
+    category: '开关设备',
+    location: '主变电所A区-开关间',
+    commissionDate: '2017-06-18',
+    status: '正常',
+    ownerRole: 'admin',
+    keyParams: {
+      额定电流: '1250A',
+      额定电压: '27.5kV',
+      操作机构: '智能真空',
+      制造商: '国电南瑞'
+    },
+    metrics: [
+      {
+        indicatorId: 'life-cycle.overdue-service',
+        name: '超出规定服役年限',
+        value: 2.5,
+        unit: '年',
+        updatedAt: '2024-12-01'
+      },
+      {
+        indicatorId: 'reliability.failure-rate',
+        name: '故障率',
+        value: 0.8,
+        unit: '次/万小时',
+        updatedAt: '2024-12-01'
+      },
+      {
+        indicatorId: 'safety.operation-impact',
+        name: '对行车安全影响',
+        value: '无影响',
+        updatedAt: '2024-12-01'
+      },
+      {
+        indicatorId: 'support.spare-part',
+        name: '备品备件供应',
+        value: '满足',
+        updatedAt: '2024-12-01'
+      }
+    ]
+  },
+  {
+    id: 'MSS-TR-003',
+    name: '主变电所主变压器T3',
+    code: 'MSS-TR-003',
+    systemId: 'main-substation',
+    category: '变压器',
+    location: '主变电所B区-变压器室',
+    commissionDate: '2012-09-05',
+    status: '关注',
+    ownerRole: 'admin',
+    keyParams: {
+      容量: '2x40MVA',
+      冷却方式: 'ONAF',
+      分接范围: '±8x1.5%'
+    },
+    metrics: [
+      {
+        indicatorId: 'life-cycle.overdue-service',
+        name: '超出规定服役年限',
+        value: 7,
+        unit: '年',
+        updatedAt: '2024-11-20'
+      },
+      {
+        indicatorId: 'reliability.failure-rate',
+        name: '故障率',
+        value: 1.4,
+        unit: '次/万小时',
+        updatedAt: '2024-11-20'
+      },
+      {
+        indicatorId: 'reliability.mtbf',
+        name: '无故障间隔时间',
+        value: 2800,
+        unit: '小时',
+        updatedAt: '2024-11-20'
+      },
+      {
+        indicatorId: 'function.integrity',
+        name: '设备功能完备性',
+        value: '一般符合',
+        updatedAt: '2024-11-20'
+      }
+    ]
+  },
+  {
+    id: 'SUB-REC-010',
+    name: '整流器柜10号',
+    code: 'SUB-REC-010',
+    systemId: 'sub-substation',
+    category: '整流器柜',
+    location: 'XX线南区子变电所',
+    commissionDate: '2019-03-12',
+    status: '正常',
+    ownerRole: 'user',
+    keyParams: {
+      类型: '12脉波整流',
+      冷却: '强迫风冷',
+      容量: '6MW'
+    },
+    metrics: [
+      {
+        indicatorId: 'life-cycle.overdue-service',
+        name: '超出规定服役年限',
+        value: 1,
+        unit: '年',
+        updatedAt: '2024-12-05'
+      },
+      {
+        indicatorId: 'reliability.failure-rate',
+        name: '故障率',
+        value: 0.6,
+        unit: '次/万小时',
+        updatedAt: '2024-12-05'
+      },
+      {
+        indicatorId: 'support.spare-part',
+        name: '备品备件供应',
+        value: '基本满足',
+        updatedAt: '2024-12-05'
+      }
+    ]
+  },
+  {
+    id: 'CAT-CON-021',
+    name: '接触线段落K21',
+    code: 'CAT-CON-021',
+    systemId: 'catenary',
+    category: '接触线',
+    location: '区间K21+300至K21+800',
+    commissionDate: '2015-11-01',
+    status: '预警',
+    ownerRole: 'admin',
+    keyParams: {
+      型号: 'CUAg 120',
+      张力: '21kN',
+      接触面磨耗: '30%'
+    },
+    metrics: [
+      {
+        indicatorId: 'life-cycle.overdue-service',
+        name: '超出规定服役年限',
+        value: 4.5,
+        unit: '年',
+        updatedAt: '2024-10-11'
+      },
+      {
+        indicatorId: 'safety.operation-impact',
+        name: '对行车安全影响',
+        value: '一般',
+        updatedAt: '2024-10-11'
+      },
+      {
+        indicatorId: 'function.integrity',
+        name: '设备功能完备性',
+        value: '符合',
+        updatedAt: '2024-10-11'
+      }
+    ]
+  }
+];
+
+export const indicatorSystems: IndicatorSystemConfig[] = [
+  {
+    id: 'standard-2024',
+    name: '供电设备状态评估标准方案（2024版）',
+    applicableSystems: ['main-substation', 'sub-substation', 'catenary', 'power-monitor'],
+    minPrimarySelection: 3,
+    tree: [
+      {
+        id: 'life-cycle',
+        name: '寿命状态',
+        definition: '设备服役年限与折旧状况',
+        direction: 'negative',
+        unit: '年',
+        thresholdDescription: '越大代表服役年限越长，需要关注老化情况',
+        rules: [
+          { label: '[0,3)年', range: [0, 3], score: 100 },
+          { label: '[3,5)年', range: [3, 5], score: 80 },
+          { label: '≥5年', range: [5, null], score: 60 }
+        ],
+        children: [
+          {
+            id: 'life-cycle.overdue-service',
+            name: '超出规定服役年限',
+            definition: '设备服役年限超出设计年限的时间差',
+            unit: '年',
+            direction: 'negative',
+            rules: [
+              { label: '[0,3)', range: [0, 3], score: 100 },
+              { label: '[3,5)', range: [3, 5], score: 80 },
+              { label: '≥5', range: [5, null], score: 60 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'safety',
+        name: '安全影响',
+        definition: '设备状态对行车及供电安全的影响程度',
+        direction: 'negative',
+        rules: [
+          { label: '无影响', value: '无影响', score: 100 },
+          { label: '一般', value: '一般', score: 80 },
+          { label: '较大', value: '较大', score: 60 },
+          { label: '严重', value: '严重', score: 40 }
+        ],
+        children: [
+          {
+            id: 'safety.operation-impact',
+            name: '对行车安全性的影响',
+            definition: '评估设备异常对列车行车安全的影响等级',
+            direction: 'negative',
+            rules: [
+              { label: '无影响', value: '无影响', score: 100 },
+              { label: '一般', value: '一般', score: 80 },
+              { label: '较大', value: '较大', score: 60 },
+              { label: '严重', value: '严重', score: 40 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'reliability',
+        name: '可靠性',
+        definition: '设备运行故障频率及稳定性指标',
+        direction: 'negative',
+        rules: [
+          { label: '故障率≤0.5', range: [null, 0.5], score: 100 },
+          { label: '0.5~1.0', range: [0.5, 1], score: 85 },
+          { label: '1.0~1.5', range: [1, 1.5], score: 70 },
+          { label: '>1.5', range: [1.5, null], score: 55 }
+        ],
+        children: [
+          {
+            id: 'reliability.failure-rate',
+            name: '故障率',
+            definition: '设备单位时间内发生故障的次数',
+            unit: '次/万小时',
+            direction: 'negative',
+            rules: [
+              { label: '≤0.5', range: [null, 0.5], score: 100 },
+              { label: '0.5~1.0', range: [0.5, 1], score: 85 },
+              { label: '1.0~1.5', range: [1, 1.5], score: 70 },
+              { label: '>1.5', range: [1.5, null], score: 55 }
+            ]
+          },
+          {
+            id: 'reliability.mtbf',
+            name: '无故障间隔时间',
+            definition: '设备平均无故障运行时间',
+            unit: '小时',
+            direction: 'positive',
+            rules: [
+              { label: '≥4000', range: [4000, null], score: 100 },
+              { label: '3000~4000', range: [3000, 4000], score: 85 },
+              { label: '2000~3000', range: [2000, 3000], score: 70 },
+              { label: '<2000', range: [null, 2000], score: 55 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'function',
+        name: '功能完备性',
+        definition: '设备各单元功能满足设计要求的程度',
+        direction: 'positive',
+        rules: [
+          { label: '符合', value: '符合', score: 100 },
+          { label: '一般符合', value: '一般符合', score: 80 },
+          { label: '不符合', value: '不符合', score: 60 }
+        ],
+        children: [
+          {
+            id: 'function.integrity',
+            name: '设备功能完备性',
+            definition: '通过现场检查对功能状态进行等级划分',
+            direction: 'positive',
+            rules: [
+              { label: '符合', value: '符合', score: 100 },
+              { label: '一般符合', value: '一般符合', score: 80 },
+              { label: '不符合', value: '不符合', score: 60 }
+            ]
+          }
+        ]
+      },
+      {
+        id: 'support',
+        name: '保障能力',
+        definition: '备品备件、检修资源满足程度',
+        direction: 'positive',
+        rules: [
+          { label: '满足', value: '满足', score: 100 },
+          { label: '基本满足', value: '基本满足', score: 80 },
+          { label: '无备件', value: '无备件', score: 60 }
+        ],
+        children: [
+          {
+            id: 'support.spare-part',
+            name: '备品备件供应',
+            definition: '备件储备与供应满足检修需求的程度',
+            direction: 'positive',
+            rules: [
+              { label: '满足', value: '满足', score: 100 },
+              { label: '基本满足', value: '基本满足', score: 80 },
+              { label: '无备件', value: '无备件', score: 60 }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+];
+
+export const defaultWeightSchemes: WeightScheme[] = [
+  {
+    id: 'scheme-ahp-default',
+    name: 'AHP标准权重',
+    createdAt: '2024-12-01T08:00:00+08:00',
+    method: 'AHP',
+    description: '依据专家经验建立的基准权重向量',
+    indicatorWeights: {
+      'life-cycle.overdue-service': 0.25,
+      'safety.operation-impact': 0.2,
+      'reliability.failure-rate': 0.18,
+      'reliability.mtbf': 0.15,
+      'function.integrity': 0.12,
+      'support.spare-part': 0.1
+    }
+  }
+];
+
+export const evaluationLevelRules = [
+  { level: 'A', min: 90, max: 100, description: '正常、可靠性稳定' },
+  { level: 'B', min: 80, max: 90, description: '轻微问题，需部分维护' },
+  { level: 'C', min: 70, max: 80, description: '早期故障特征，需及时维修' },
+  { level: 'D', min: 0, max: 70, description: '问题较重，需大修或更换' }
+] as const;
+
+export const evaluationHistoryKey = 'urban-rail-evaluation-history';
+
+export type EvaluationHistory = DeviceEvaluationResult[];
