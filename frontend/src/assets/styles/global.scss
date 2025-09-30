@@ -1,0 +1,45 @@
+:root {
+  --primary-color: #165dff;
+  --secondary-color: #f5f7fa;
+  --text-color: #1f2d3d;
+  --muted-color: #6b778c;
+  --success-color: #52c41a;
+  --warning-color: #faad14;
+  --danger-color: #f56c6c;
+  font-size: 16px;
+}
+
+body {
+  margin: 0;
+  font-family: 'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f2f4f8;
+  color: var(--text-color);
+}
+
+html,
+body,
+#app {
+  min-height: 100%;
+}
+
+.el-card {
+  border-radius: 12px;
+}
+
+.el-button.is-text {
+  color: var(--primary-color);
+}
+
+.el-menu {
+  border-right: none;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
