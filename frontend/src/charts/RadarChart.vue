@@ -67,10 +67,11 @@ onMounted(() => {
 });
 
 watch(
-  () => ({ ...props }),
+  [() => props.title, () => props.indicator, () => props.value],
   () => {
     render();
-  }
+  },
+  { deep: true }
 );
 
 onBeforeUnmount(() => {

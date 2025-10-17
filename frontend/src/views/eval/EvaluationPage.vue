@@ -6,17 +6,9 @@
           <template #header>
             <div class="card-header">
               <div>
-                <h2>卡片 A：指标体系选择</h2>
+                <h2>指标体系选择</h2>
                 <p>依据配置选择需要参与评估的指标体系及具体指标</p>
               </div>
-              <el-select v-model="evaluationStore.activeSystemId" placeholder="选择指标体系" @change="handleSystemChange">
-                <el-option
-                  v-for="system in evaluationStore.systemOptions"
-                  :key="system.id"
-                  :label="system.name"
-                  :value="system.id"
-                />
-              </el-select>
             </div>
           </template>
 
@@ -114,11 +106,11 @@
           <template #header>
             <div class="card-header">
               <div>
-                <h2>卡片 B：指标权重计算</h2>
+                <h2>指标权重计算</h2>
                 <p>提供 AHP、熵权法以及手工录入三种方案，并可保存为权重方案</p>
               </div>
               <el-space>
-                <el-select v-model="evaluationStore.activeSchemeId" placeholder="选择权重方案">
+                <el-select v-model="selectedSchemeId" placeholder="选择权重方案" style="width: 220px">
                   <el-option
                     v-for="scheme in evaluationStore.weightSchemes"
                     :key="scheme.id"
@@ -126,8 +118,14 @@
                     :value="scheme.id"
                   />
                 </el-select>
-                <el-button @click="handleExportSchemes">导出方案</el-button>
-                <el-upload :auto-upload="false" accept="application/json" :on-change="handleImportSchemes">
+                <el-button @click="schemeDialogVisible = true">查看方案</el-button>
+                <el-upload
+                  class="scheme-upload"
+                  :auto-upload="false"
+                  :show-file-list="false"
+                  accept="application/json"
+                  :on-change="handleImportSchemes"
+                >
                   <el-button>导入方案</el-button>
                 </el-upload>
               </el-space>
@@ -290,7 +288,7 @@
           <template #header>
             <div class="card-header">
               <div>
-                <h2>卡片 C：设备状态评估与等级划分</h2>
+                <h2>设备状态评估与等级划分</h2>
                 <p>选择设备清单与权重方案，执行综合评估并查看可视化结果</p>
               </div>
               <el-space>
@@ -354,9 +352,9 @@
                     :label="`${result.deviceName}（${result.level}）`"
                     :name="result.deviceId"
                   >
-                    <el-row :gutter="20">
-                      <el-col :span="12">
-                        <el-card shadow="never" class="result-card">
+                    <el-row :gutter="20" class="result-grid">
+                      <el-col :xs="24" :md="10">
+                        <el-card shadow="never" class="result-card score-card">
                           <div class="score-block">
                             <h3>综合得分</h3>
                             <span class="score">{{ result.totalScore.toFixed(1) }}</span>
@@ -372,8 +370,8 @@
                           </ul>
                         </el-card>
                       </el-col>
-                      <el-col :span="12">
-                        <el-card shadow="never" class="result-card">
+                      <el-col :xs="24" :md="7">
+                        <el-card shadow="never" class="result-card chart-card">
                           <RadarChart
                             v-if="detailsMap[result.deviceId]"
                             :title="'短板指标雷达图'"
@@ -382,7 +380,9 @@
                           />
                           <el-empty v-else description="暂无数据" />
                         </el-card>
-                        <el-card shadow="never" class="result-card">
+                      </el-col>
+                      <el-col :xs="24" :md="7">
+                        <el-card shadow="never" class="result-card chart-card">
                           <BarChart
                             v-if="detailsMap[result.deviceId]"
                             :title="'指标贡献柱状图'"
@@ -426,6 +426,31 @@
         </el-card>
       </el-col>
     </el-row>
+    <el-dialog v-model="schemeDialogVisible" title="权重方案列表" width="620px">
+      <el-empty
+        v-if="!schemeList.length"
+        description="暂无权重方案，可先在上方保存一个方案"
+      />
+      <el-table v-else :data="schemeList" border size="small" class="scheme-table">
+        <el-table-column prop="name" label="方案名称" />
+        <el-table-column prop="method" label="来源">
+          <template #default="{ row }">
+            {{ schemeMethodLabel(row.method) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="createdAt" label="创建时间" width="200">
+          <template #default="{ row }">
+            {{ formatSchemeDate(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="160">
+          <template #default="{ row }">
+            <el-button type="primary" link @click="handleExportScheme(row)">导出</el-button>
+            <el-button type="danger" link @click="handleRemoveScheme(row)">删除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+    </el-dialog>
   </div>
 </template>
 
@@ -446,7 +471,7 @@ import {
 import RadarChart from '@/charts/RadarChart.vue';
 import BarChart from '@/charts/BarChart.vue';
 import TrendChart from '@/charts/TrendChart.vue';
-import type { DeviceEvaluationResult, IndicatorNode } from '@/types/evaluation';
+import type { DeviceEvaluationResult, IndicatorNode, WeightScheme } from '@/types/evaluation';
 
 const evaluationStore = useEvaluationStore();
 const deviceStore = useDeviceStore();
@@ -506,31 +531,40 @@ const selectAllIndicators = () => {
   };
   walk(indicatorTreeData.value);
   evaluationStore.setIndicators(leaves);
-  nextTick(() => {
-    treeRef.value?.setCheckedKeys(leaves);
-  });
 };
 
 const clearSelection = () => {
   evaluationStore.setIndicators([]);
-  treeRef.value?.setCheckedKeys([]);
 };
 
 const selectionValid = computed(() => evaluationStore.validateSelection());
 
-const handleSystemChange = (id: string) => {
-  evaluationStore.setActiveSystem(id);
+const hasSameSelection = (current: string[], target: string[]) => {
+  if (current.length !== target.length) {
+    return false;
+  }
+  const currentSet = new Set(current);
+  return target.every((key) => currentSet.has(key));
+};
+
+const syncTreeSelection = (keys: string[]) => {
   nextTick(() => {
-    treeRef.value?.setCheckedKeys(evaluationStore.selectedIndicatorIds);
+    const tree = treeRef.value;
+    if (!tree) {
+      return;
+    }
+    const currentKeys = (tree.getCheckedKeys(true) as string[]) ?? [];
+    if (hasSameSelection(currentKeys, keys)) {
+      return;
+    }
+    tree.setCheckedKeys(keys);
   });
 };
 
 watch(
   () => evaluationStore.selectedIndicatorIds,
   (val) => {
-    nextTick(() => {
-      treeRef.value?.setCheckedKeys(val);
-    });
+    syncTreeSelection(val);
   }
 );
 
@@ -720,16 +754,46 @@ watch(
   { immediate: true }
 );
 
-const handleExportSchemes = () => {
-  const content = evaluationStore.exportSchemes();
+const schemeDialogVisible = ref(false);
+const schemeList = computed(() => evaluationStore.weightSchemes);
+
+const schemeMethodLabel = (method: WeightScheme['method']) => {
+  switch (method) {
+    case 'AHP':
+      return 'AHP 计算';
+    case 'Entropy':
+      return '熵权法';
+    case 'Manual':
+      return '手工录入';
+    default:
+      return method;
+  }
+};
+
+const formatSchemeDate = (value: string) => {
+  if (!value) return '-';
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : date.toLocaleString();
+};
+
+const handleExportScheme = (scheme: WeightScheme) => {
+  const fileName = scheme.name.replace(/[\\/:*?"<>|]/g, '_') || '权重方案';
+  const content = JSON.stringify(scheme, null, 2);
   const blob = new Blob([content], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = '权重方案.json';
+  a.download = `${fileName}.json`;
   a.click();
   URL.revokeObjectURL(url);
-  ElMessage.success('权重方案已导出');
+  ElMessage.success('方案已导出');
+};
+
+const handleRemoveScheme = (scheme: WeightScheme) => {
+  ElMessageBox.confirm(`确认删除方案「${scheme.name}」？`, '提示', { type: 'warning' }).then(() => {
+    evaluationStore.deleteWeightScheme(scheme.id);
+    ElMessage.success('方案已删除');
+  }).catch(() => void 0);
 };
 
 const handleImportSchemes = (file: any) => {
@@ -788,6 +852,15 @@ watch(
     }
   },
   { immediate: true }
+);
+
+watch(
+  () => selectedSchemeId.value,
+  (id) => {
+    if (id && id !== evaluationStore.activeSchemeId) {
+      evaluationStore.setActiveScheme(id);
+    }
+  }
 );
 
 const canEvaluate = computed(
@@ -980,6 +1053,21 @@ const trendValues = computed(() => evaluationStore.history.map((item) => item.to
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.scheme-upload :deep(.el-upload) {
+  display: inline-flex;
+  align-items: center;
+}
+
+.scheme-upload :deep(.el-button) {
+  height: 32px;
+  line-height: 32px;
+}
+
+.scheme-table {
+  margin-top: 8px;
 }
 
 .empty-tip {
@@ -996,9 +1084,31 @@ const trendValues = computed(() => evaluationStore.history.map((item) => item.to
   min-height: 360px;
 }
 
+.result-grid {
+  margin-bottom: 16px;
+}
+
 .result-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
   margin-bottom: 16px;
   border-radius: 12px;
+}
+
+.score-card .detail-list {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.chart-card {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-card :deep(.chart) {
+  width: 100%;
 }
 
 .score-block {

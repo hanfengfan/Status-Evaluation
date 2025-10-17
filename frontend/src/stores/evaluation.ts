@@ -115,21 +115,6 @@ export const useEvaluationStore = defineStore('evaluation', () => {
     return primaryIds.size >= min;
   };
 
-  const setActiveSystem = (id: string) => {
-    activeSystemId.value = id;
-    const available = systemOptions.value
-      .find((item) => item.id === id)
-      ?.tree.flatMap((node) => node.children?.map((child) => child.id) ?? []) ?? [];
-    if (available.length) {
-      selectedIndicatorIds.value = selectedIndicatorIds.value.filter((id) =>
-        available.includes(id)
-      );
-      if (!selectedIndicatorIds.value.length) {
-        selectedIndicatorIds.value = available.slice(0, Math.min(3, available.length));
-      }
-    }
-  };
-
   const toggleIndicator = (id: string, checked: boolean) => {
     if (checked) {
       if (!selectedIndicatorIds.value.includes(id)) {
@@ -187,26 +172,43 @@ export const useEvaluationStore = defineStore('evaluation', () => {
   };
 
   if (typeof window !== 'undefined') {
+    const createPersistTask = <T>(key: string, getter: () => T) => {
+      let timer: ReturnType<typeof window.setTimeout> | null = null;
+      return () => {
+        if (timer !== null) {
+          window.clearTimeout(timer);
+        }
+        timer = window.setTimeout(() => {
+          window.localStorage.setItem(key, JSON.stringify(getter()));
+          timer = null;
+        }, 120);
+      };
+    };
+
+    const persistWeights = createPersistTask(WEIGHT_STORAGE_KEY, () => weightSchemes.value);
+    const persistSelections = createPersistTask(SELECTION_STORAGE_KEY, () => selectedIndicatorIds.value);
+    const persistHistory = createPersistTask(evaluationHistoryKey, () => history.value);
+
     watch(
       weightSchemes,
-      (val) => {
-        window.localStorage.setItem(WEIGHT_STORAGE_KEY, JSON.stringify(val));
+      () => {
+        persistWeights();
       },
       { deep: true }
     );
 
     watch(
       selectedIndicatorIds,
-      (val) => {
-        window.localStorage.setItem(SELECTION_STORAGE_KEY, JSON.stringify(val));
+      () => {
+        persistSelections();
       },
       { deep: true }
     );
 
     watch(
       history,
-      (val) => {
-        window.localStorage.setItem(evaluationHistoryKey, JSON.stringify(val));
+      () => {
+        persistHistory();
       },
       { deep: true }
     );
@@ -224,7 +226,6 @@ export const useEvaluationStore = defineStore('evaluation', () => {
     activeScheme,
     history,
     validateSelection,
-    setActiveSystem,
     toggleIndicator,
     setIndicators,
     saveWeightScheme,

@@ -60,10 +60,11 @@ onMounted(() => {
 });
 
 watch(
-  () => ({ ...props }),
+  [() => props.title, () => props.categories, () => props.values],
   () => {
     render();
-  }
+  },
+  { deep: true }
 );
 
 onBeforeUnmount(() => {

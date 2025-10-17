@@ -16,7 +16,7 @@
           <el-icon><DataLine /></el-icon>
           <span>设备评估</span>
         </el-menu-item>
-        <el-menu-item index="/app/settings" :disabled="auth.role !== 'admin'">
+        <el-menu-item index="/app/settings">
           <el-icon><Setting /></el-icon>
           <span>系统设置</span>
         </el-menu-item>
@@ -26,7 +26,7 @@
       <el-header class="app-header">
         <div class="header-left">
           <h1>城市轨道交通供电设备状态评估系统</h1>
-          <p>Urban Rail Traction Power Assessment</p>
+          <!-- <p>Urban Rail Traction Power Assessment</p> -->
         </div>
         <div class="header-right">
           <el-tag type="info" effect="dark" class="role-tag">
@@ -150,7 +150,7 @@ applyTheme();
 
 .logo {
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px;
   line-height: 24px;
   color: var(--primary-color);
   text-align: center;
@@ -175,7 +175,7 @@ applyTheme();
 
 .header-left h1 {
   margin: 0;
-  font-size: 20px;
+  font-size: 24px;
   color: var(--text-color);
 }
 

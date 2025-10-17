@@ -2,7 +2,7 @@
   <div class="login-wrapper">
     <div class="login-header">
       <h1>城市轨道交通供电设备状态评估系统</h1>
-      <p>Urban Rail Traction Power Assessment</p>
+      <!-- <p>Urban Rail Traction Power Assessment</p> -->
     </div>
     <el-card class="login-card" shadow="always">
       <el-tabs v-model="activeTab" class="login-tabs">
@@ -93,14 +93,14 @@ const handleSubmit = () => {
 
 <style scoped>
 .login-wrapper {
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   background: radial-gradient(circle at top, rgba(22, 93, 255, 0.2), transparent 60%),
     #f5f7fb;
-  padding: 48px 16px;
+  padding: 48px 20px;
 }
 
 .login-header {
@@ -111,7 +111,7 @@ const handleSubmit = () => {
 
 .login-header h1 {
   margin: 0;
-  font-size: 28px;
+  font-size: 36px;
 }
 
 .login-header p {
@@ -121,14 +121,16 @@ const handleSubmit = () => {
 }
 
 .login-card {
-  width: 360px;
-  border-radius: 16px;
+  width: 460px;
+  height: auto;
+  border-radius: 20px;
   box-shadow: 0 20px 45px rgba(22, 93, 255, 0.15);
   border: none;
+  /* 如果需要控制高度，可以增加height，比如：height: 350px; */
 }
 
 .login-tabs :deep(.el-tabs__item) {
-  font-size: 16px;
+  font-size: 18px;
 }
 
 .submit-btn {

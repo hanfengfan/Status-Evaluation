@@ -113,10 +113,21 @@ export const useDeviceStore = defineStore('device', () => {
   };
 
   if (typeof window !== 'undefined') {
+    let persistTimer: ReturnType<typeof window.setTimeout> | null = null;
+    const schedulePersist = () => {
+      if (persistTimer !== null) {
+        window.clearTimeout(persistTimer);
+      }
+      persistTimer = window.setTimeout(() => {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(devices.value));
+        persistTimer = null;
+      }, 120);
+    };
+
     watch(
       devices,
-      (val) => {
-        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(val));
+      () => {
+        schedulePersist();
       },
       { deep: true }
     );
@@ -137,3 +148,4 @@ export const useDeviceStore = defineStore('device', () => {
     recordEvaluation
   };
 });
+

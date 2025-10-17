@@ -28,8 +28,7 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'settings',
         name: 'settings',
-        component: () => import('@/views/SystemSettings.vue'),
-        meta: { requiresAdmin: true }
+        component: () => import('@/views/SystemSettings.vue')
       }
     ]
   }
@@ -53,11 +52,6 @@ router.beforeEach((to, _from, next) => {
 
   if (!auth.isAuthenticated) {
     next({ path: '/login', query: { redirect: to.fullPath } });
-    return;
-  }
-
-  if (to.meta.requiresAdmin && auth.role !== 'admin') {
-    next('/app');
     return;
   }
 
